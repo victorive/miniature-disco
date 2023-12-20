@@ -42,7 +42,7 @@ class PostServiceTest extends TestCase
         $postRepository = Mockery::mock(PostRepository::class);
 
         $postService = Mockery::mock(PostService::class, [$userRepository, $postRepository])->makePartial();
-        $postService->shouldReceive('getPosts')->once()->andReturn([
+        $postService->shouldReceive('getExternalPosts')->once()->andReturn([
             ['userId' => 1, 'title' => 'Post 1', 'body' => 'Body 1'],
             ['userId' => 2, 'title' => 'Post 2', 'body' => 'Body 2']
         ]);
