@@ -2,7 +2,10 @@
 
 namespace App\Exceptions;
 
+use App\Helpers\ResponseHelper;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -23,8 +26,8 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (AccessDeniedHttpException $exception) {
+            return ResponseHelper::clientErrorResponse('This action is unauthorized.', Response::HTTP_FORBIDDEN);
         });
     }
 }

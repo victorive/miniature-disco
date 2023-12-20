@@ -7,6 +7,7 @@ use App\Repositories\Contracts\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PostService
 {
@@ -42,14 +43,14 @@ class PostService
      */
     public function fetchAndPrepareData($userId): array
     {
-        $posts = $this->getPosts();
+        $posts = $this->getExternalPosts();
         return $this->prepareData($userId, $posts);
     }
 
     /**
      * @throws RequestException
      */
-    public function getPosts(): array
+    public function getExternalPosts(): array
     {
         $response = Http::accept('application/json')
             ->get($this->url . '/posts');
@@ -85,9 +86,50 @@ class PostService
                 'title' => $postData['title'],
                 'body' => $postData['body'],
                 'user_id' => $userId,
+                'created_at' => now()->toDateTimeString(),
+                'updated_at' => now()->toDateTimeString()
             ];
         }
 
         $this->postRepository->insert($posts);
+    }
+
+    public function getPosts()
+    {
+        return $this->postRepository->all();
+    }
+
+    public function getPostById(int $postId)
+    {
+        return $this->postRepository->find($postId);
+    }
+
+    public function createPost(array $formData, int $userId)
+    {
+        $formData = collect($formData)->merge(['user_id' => $userId])->toArray();
+
+        return $this->postRepository->create($formData);
+    }
+
+    public function updatePost(array $formData, int $postId)
+    {
+        $post = $this->postRepository->find($postId);
+
+        if (!$post) {
+            throw new NotFoundHttpException;
+        }
+
+        return $this->postRepository->update($formData, $postId);
+    }
+
+    public function deletePost(int $postId): void
+    {
+        $post = $this->postRepository->find($postId);
+
+        if (!$post) {
+            throw new NotFoundHttpException;
+        }
+
+        $this->postRepository->delete($postId);
     }
 }
