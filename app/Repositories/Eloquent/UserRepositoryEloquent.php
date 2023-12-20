@@ -19,4 +19,9 @@ class UserRepositoryEloquent implements UserRepository
     {
         return User::query()->where('email', $email)->first();
     }
+
+    public function findById(int $userId): ?object
+    {
+        return User::query()->find($userId);
+    }
 }
